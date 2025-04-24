@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "buildCommand": "cd timing-meteo && npm install && npm run build",
+  "outputDirectory": "timing-meteo/dist/timing-meteo/browser",
+  "installCommand": "cd timing-meteo && npm install",
+  "framework": "angular"
+}
