@@ -1,0 +1,281 @@
+<main class="main">
+  <div class="container">
+    <div class="address-section">
+      <form class="address-form">
+        <div class="form-group">
+          <h2>🌍 Dove ti trovi?</h2>
+          <div class="input-container">
+            <input type="text" 
+                   class="address-input" 
+                   placeholder="Inserisci il tuo indirizzo"
+                   [formControl]="addressControl">
+            @if (isLoading) {
+              <span class="loading-spinner">⌛</span>
+            }
+          </div>
+          @if (suggestions.length > 0) {
+            <ul class="suggestions-list">
+              @for (suggestion of suggestions; track suggestion) {
+                <li (click)="selectAddress(suggestion)">{{ suggestion.display_name }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </form>
+    </div>
+
+    <app-timer (timeRangeChange)="checkWeather($event)"></app-timer>
+
+    @if (weatherCheck) {
+      <div class="weather-section">
+        @if (weatherCheck.warnings.length > 0) {
+          <div class="weather-warning">
+            <div class="weather-status bad">
+              <span class="weather-dot"></span>
+              <p class="weather-message">
+                ⚠️ Attenzione! Potrebbero esserci condizioni meteo avverse:
+                <small>Ecco quando:</small>
+              </p>
+            </div>
+            <ul class="warning-list">
+              @for (warning of weatherCheck.warnings; track warning) {
+                <li>{{ warning }}</li>
+              }
+            </ul>
+          </div>
+        } @else {
+          <div class="weather-ok">
+            <div class="weather-status good">
+              <span class="weather-dot"></span>
+              <p class="weather-message">
+                ☀️ Ottimo! Il tempo sarà bello e soleggiato durante l'orario selezionato.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</main>
+
+<style>
+  :host {
+    --bright-blue: #8bd3dd;
+    --french-violet: #001858;
+    --peach: #f3d2c1;
+    --bg-color: #fef6e4;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .main {
+    width: 100%;
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: auto;
+  }
+
+  .address-section {
+    width: 100%;
+  }
+
+  .address-form {
+    background: var(--bg-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid var(--french-violet);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    margin-bottom: 1.5rem;
+    color: var(--french-violet);
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .input-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 4px; /* Add space for suggestions */
+  }
+
+  .address-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--french-violet);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background-color: #fff;
+  }
+
+  .address-input:focus {
+    outline: none;
+    border-color: var(--bright-blue);
+    box-shadow: 0 0 0 3px rgba(139, 211, 221, 0.15);
+  }
+
+  .suggestions-list {
+    position: relative; /* Change from absolute to relative */
+    width: 100%;
+    background: var(--bg-color);
+    border: 2px solid var(--french-violet);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .suggestions-list li {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: var(--french-violet);
+  }
+
+  .suggestions-list li:hover {
+    background-color: var(--peach);
+  }
+
+  .loading-spinner {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--french-violet);
+    font-size: 0.875rem;
+  }
+
+  .weather-section {
+    width: 100%;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: var(--bg-color);
+    border: 2px solid var(--french-violet);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .weather-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 2px solid var(--french-violet);
+  }
+
+  .weather-status.good {
+    background-color: rgba(139, 211, 221, 0.2);
+  }
+
+  .weather-status.bad {
+    background-color: rgba(243, 210, 193, 0.2);
+  }
+
+  .weather-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .weather-status.good .weather-dot {
+    background-color: var(--bright-blue);
+    box-shadow: 0 0 0 2px rgba(139, 211, 221, 0.2);
+  }
+
+  .weather-status.bad .weather-dot {
+    background-color: var(--peach);
+    box-shadow: 0 0 0 2px rgba(243, 210, 193, 0.2);
+  }
+
+  .weather-message {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--french-violet);
+  }
+
+  .warning-list {
+    margin: 0.5rem 0 0;
+    padding-left: 1.5rem;
+    color: var(--french-violet);
+    font-size: 0.875rem;
+  }
+
+  .warning-list li {
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .main {
+      padding: 1rem;
+    }
+
+    .address-form {
+      padding: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .address-input {
+      padding: 0.625rem;
+      font-size: 0.9375rem;
+    }
+
+    .weather-section {
+      padding: 1rem;
+    }
+
+    .weather-status {
+      padding: 0.75rem;
+      flex-direction: column;
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .weather-message {
+      font-size: 0.8125rem;
+      padding: 0 0.25rem;
+    }
+
+    .warning-list {
+      padding-left: 1rem;
+      padding-right: 0.5rem;
+      font-size: 0.8125rem;
+      margin: 0.5rem 0 0;
+    }
+  }
+</style>
